@@ -29,8 +29,8 @@ const (
 
 type flags struct {
 	workingDir   ExecWorkingDir
-	envVars      []ExecEnvVar
 	shell        ExecShell
+	envVars      []ExecEnvVar
 	useShell     execShellFlag
 	ignoreErrors execIgnoreErrorsFlag
 	quiet        execQuietFlag

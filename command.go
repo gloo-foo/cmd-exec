@@ -106,31 +106,32 @@ func resolve(argv []string, f flags) (name string, args []string) {
 // behavior to argv. Environment variables are added on top of the inherited
 // environment.
 func commandLine(argv []string, f flags) string {
-	var b strings.Builder
-
-	if dir := string(f.workingDir); dir != "" {
-		b.WriteString("cd ")
-		b.WriteString(shellQuote(dir))
-		b.WriteString(" && ")
-	}
-	for _, e := range f.envVars {
-		b.WriteString(envAssignment(string(e)))
-		b.WriteByte(' ')
-	}
-
 	parts := make([]string, len(argv))
 	for i, a := range argv {
 		parts[i] = shellQuote(a)
 	}
-	b.WriteString(strings.Join(parts, " "))
 
+	line := envPrefix(f) + strings.Join(parts, " ")
 	if bool(f.quiet) {
-		b.WriteString(" 2>/dev/null")
+		line += " 2>/dev/null"
 	}
 	if bool(f.ignoreErrors) {
-		b.WriteString(" || true")
+		line += " || true"
 	}
-	return b.String()
+	return line
+}
+
+// envPrefix builds the leading "cd <dir> && K=V " portion of the shell command
+// line from the working-directory and environment-variable flags.
+func envPrefix(f flags) string {
+	prefix := ""
+	if dir := string(f.workingDir); dir != "" {
+		prefix = "cd " + shellQuote(dir) + " && "
+	}
+	for _, e := range f.envVars {
+		prefix += envAssignment(string(e)) + " "
+	}
+	return prefix
 }
 
 // envAssignment quotes the value half of a KEY=VALUE assignment for the shell.
